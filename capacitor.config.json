@@ -1,0 +1,9 @@
+{
+  "appId": "app.lovable.cd304b54c5174c3298a9bd74a0185977",
+  "appName": "GlucoLog",
+  "webDir": "dist",
+  "server": {
+    "url": "https://cd304b54-c517-4c32-98a9-bd74a0185977.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}
