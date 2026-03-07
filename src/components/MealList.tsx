@@ -87,6 +87,7 @@ export default function MealList({ onBack }: MealListProps) {
           </Card>
         ))}
       </div>
+      <div ref={listEndRef} />
     </div>
   );
 }
