@@ -49,7 +49,7 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">GlucoLog</h1>
+          <h1 className="text-2xl font-bold text-foreground">Calcibus</h1>
           <p className="text-sm text-muted-foreground">{format(new Date(), 'EEEE, MMMM d')}</p>
         </div>
         <Button onClick={onAddEntry} size="lg" className="rounded-full h-12 w-12 p-0">
