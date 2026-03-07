@@ -169,6 +169,22 @@ export default function AddEntry({ onBack }: AddEntryProps) {
           />
         </div>
 
+        {/* Reminder Time */}
+        <div>
+          <Label htmlFor="reminder">Follow-up Reminder (minutes)</Label>
+          <Input
+            id="reminder"
+            type="number"
+            value={reminderMinutes}
+            onChange={e => setReminderMinutes(e.target.value)}
+            placeholder={settings.reminderDelayMinutes.toString()}
+            className="mt-1.5"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Default: {settings.reminderDelayMinutes} min (change in Settings)
+          </p>
+        </div>
+
         <Button onClick={handleSubmit} size="lg" className="mt-2">
           Log Entry
         </Button>
