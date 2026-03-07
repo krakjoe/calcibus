@@ -15,6 +15,7 @@ interface AddEntryProps {
 
 const timeSlots = [
   { value: 'breakfast', label: '🌅 Breakfast' },
+  { value: 'brunch', label: '🥂 Brunch' },
   { value: 'lunch', label: '☀️ Lunch' },
   { value: 'dinner', label: '🌙 Dinner' },
   { value: 'snack', label: '🍎 Snack' },
