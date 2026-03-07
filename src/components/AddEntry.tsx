@@ -65,7 +65,7 @@ export default function AddEntry({ onBack }: AddEntryProps) {
   const canSuggest = selectedMealId && timeOfDay && glucoseLevel;
 
   return (
-    <div className="flex flex-col gap-4 p-4 max-w-lg mx-auto">
+    <div className="flex flex-col gap-4 p-4 pb-24 max-w-lg mx-auto">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={onBack} className="p-2">
           <ArrowLeft className="h-5 w-5" />
