@@ -53,7 +53,7 @@ export default function AddEntry({ onBack }: AddEntryProps) {
       mealName: selectedMeal?.name || '',
       glucoseLevel: parseFloat(glucoseLevel),
       dose: parseFloat(dose),
-      timeOfDay: timeOfDay as 'breakfast' | 'lunch' | 'dinner' | 'snack',
+      timeOfDay: timeOfDay as 'breakfast' | 'brunch' | 'lunch' | 'dinner' | 'snack',
       timestamp: new Date().toISOString(),
     });
 
