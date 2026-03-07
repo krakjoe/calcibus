@@ -22,10 +22,12 @@ const timeSlots = [
 
 export default function AddEntry({ onBack }: AddEntryProps) {
   const meals = getMeals();
+  const settings = getSettings();
   const [selectedMealId, setSelectedMealId] = useState('');
   const [timeOfDay, setTimeOfDay] = useState<string>('');
   const [glucoseLevel, setGlucoseLevel] = useState('');
   const [dose, setDose] = useState('');
+  const [reminderMinutes, setReminderMinutes] = useState(settings.reminderDelayMinutes.toString());
   const [suggestion, setSuggestion] = useState<{ suggestedDose: number | null; confidence: string; basedOn: number } | null>(null);
 
   const selectedMeal = meals.find(m => m.id === selectedMealId);
@@ -54,10 +56,10 @@ export default function AddEntry({ onBack }: AddEntryProps) {
       timestamp: new Date().toISOString(),
     });
 
-    const settings = getSettings();
-    await scheduleFollowUpReminder(entry.id, settings.reminderDelayMinutes);
+    const delay = parseInt(reminderMinutes) || settings.reminderDelayMinutes;
+    await scheduleFollowUpReminder(entry.id, delay);
     
-    toast.success(`Logged! Reminder set for ${settings.reminderDelayMinutes} min`);
+    toast.success(`Logged! Reminder set for ${delay} min`);
     onBack();
   };
 
@@ -165,6 +167,22 @@ export default function AddEntry({ onBack }: AddEntryProps) {
             placeholder="0"
             className="mt-1.5"
           />
+        </div>
+
+        {/* Reminder Time */}
+        <div>
+          <Label htmlFor="reminder">Follow-up Reminder (minutes)</Label>
+          <Input
+            id="reminder"
+            type="number"
+            value={reminderMinutes}
+            onChange={e => setReminderMinutes(e.target.value)}
+            placeholder={settings.reminderDelayMinutes.toString()}
+            className="mt-1.5"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Default: {settings.reminderDelayMinutes} min (change in Settings)
+          </p>
         </div>
 
         <Button onClick={handleSubmit} size="lg" className="mt-2">
