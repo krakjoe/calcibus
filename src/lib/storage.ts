@@ -12,7 +12,7 @@ export interface MealEntry {
   mealName: string;
   glucoseLevel: number;
   dose: number;
-  timeOfDay: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  timeOfDay: 'breakfast' | 'brunch' | 'lunch' | 'dinner' | 'snack';
   timestamp: string;
   followUpGlucose?: number;
   followUpTimestamp?: string;

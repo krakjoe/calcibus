@@ -15,6 +15,7 @@ interface AddEntryProps {
 
 const timeSlots = [
   { value: 'breakfast', label: '🌅 Breakfast' },
+  { value: 'brunch', label: '🥂 Brunch' },
   { value: 'lunch', label: '☀️ Lunch' },
   { value: 'dinner', label: '🌙 Dinner' },
   { value: 'snack', label: '🍎 Snack' },
@@ -52,7 +53,7 @@ export default function AddEntry({ onBack }: AddEntryProps) {
       mealName: selectedMeal?.name || '',
       glucoseLevel: parseFloat(glucoseLevel),
       dose: parseFloat(dose),
-      timeOfDay: timeOfDay as 'breakfast' | 'lunch' | 'dinner' | 'snack',
+      timeOfDay: timeOfDay as 'breakfast' | 'brunch' | 'lunch' | 'dinner' | 'snack',
       timestamp: new Date().toISOString(),
     });
 
