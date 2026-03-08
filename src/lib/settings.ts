@@ -1,5 +1,14 @@
 import { db, SettingsWithId } from './database';
 
+export interface Settings {
+  reminderDelayMinutes: number;
+  pollingIntervalMs: number;
+  insulinSensitivityFactor: number;
+  insulinSensitivitySchedule?: Partial<Record<'breakfast' | 'brunch' | 'lunch' | 'dinner' | 'snack', number>>;
+  targetRangeMin: number;
+  targetRangeMax: number;
+}
+
 const __SETTINGS_ID__ = 1;
 
 const __SETTINGS_DEFAULT__: Settings = {

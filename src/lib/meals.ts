@@ -6,7 +6,7 @@ export interface Meal {
     defaultCarbs?: number;
 }
 
-export { Meal };
+
 
 const __MEALS_DEFAULT__: Meal[] = [
     { id: '1', name: 'Oatmeal',            defaultCarbs: 30 },

@@ -1,7 +1,7 @@
 import { Utensils, List, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export type AppView = 'Dashboard' | 'AddEntry' | 'MealList' | 'Settings';
+export type AppView = 'Dashboard' | 'AddLog' | 'MealList' | 'Settings';
 
 interface NavigationProps {
   current: AppView;
