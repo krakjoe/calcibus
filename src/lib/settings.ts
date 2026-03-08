@@ -3,7 +3,7 @@ import { db, SettingsWithId } from './database';
 const __SETTINGS_ID__ = 1;
 
 const __SETTINGS_DEFAULT__: Settings = {
-  reminderDelayMinutes:          0.1667,
+  reminderDelayMinutes:          120,
   pollingIntervalMs:             10000,
   insulinSensitivityFactor:      50,
   targetRangeMin:                100,
