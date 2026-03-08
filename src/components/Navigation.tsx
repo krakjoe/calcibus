@@ -16,7 +16,7 @@ export default function Navigation({ current, onNavigate }: NavigationProps) {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
+    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border pb-[max(env(safe-area-inset-bottom),0px)]">
       <div className="flex justify-around max-w-lg mx-auto">
         {items.map(item => (
           <Button
