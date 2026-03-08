@@ -92,7 +92,7 @@ export default function AddLog({ onBack }: AddLogProps) {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-4 p-4 pb-24 max-w-lg mx-auto">
+      <div className="flex flex-col gap-4 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] max-w-lg mx-auto">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
