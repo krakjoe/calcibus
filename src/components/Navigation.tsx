@@ -1,18 +1,18 @@
 import { Utensils, List, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export type AppView = 'dashboard' | 'addEntry' | 'mealList' | 'settings';
+export type AppView = 'Dashboard' | 'AddEntry' | 'MealList' | 'Settings';
 
-interface BottomNavProps {
+interface NavigationProps {
   current: AppView;
   onNavigate: (view: AppView) => void;
 }
 
-export default function BottomNav({ current, onNavigate }: BottomNavProps) {
+export default function Navigation({ current, onNavigate }: NavigationProps) {
   const items = [
-    { view: 'dashboard' as AppView, icon: Utensils, label: 'Log' },
-    { view: 'mealList' as AppView, icon: List, label: 'Meals' },
-    { view: 'settings' as AppView, icon: Settings, label: 'Settings' },
+    { view: 'Dashboard' as AppView, icon: Utensils, label: 'Log' },
+    { view: 'MealList' as AppView, icon: List, label: 'Meals' },
+    { view: 'Settings' as AppView, icon: Settings, label: 'Settings' },
   ];
 
   return (

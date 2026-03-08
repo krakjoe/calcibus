@@ -1,28 +1,28 @@
 import { useState } from 'react';
 import Dashboard from '@/components/Dashboard';
-import AddEntry from '@/components/AddEntry';
+import AddLog from '@/components/AddLog';
 import MealList from '@/components/MealList';
-import SettingsPage from '@/components/SettingsPage';
-import BottomNav, { type AppView } from '@/components/BottomNav';
+import Settings from '@/components/Settings';
+import Navigation, { type AppView } from '@/components/Navigation';
 
 const Index = () => {
-  const [view, setView] = useState<AppView>('dashboard');
+  const [view, setView] = useState<AppView>('Dashboard');
 
   return (
     <div className="min-h-screen bg-background">
-      {view === 'dashboard' && (
-        <Dashboard onAddEntry={() => setView('addEntry')} />
+      {view === 'Dashboard' && (
+        <Dashboard key="dashboard" onAddEntry={() => setView('AddLog')} />
       )}
-      {view === 'addEntry' && (
-        <AddEntry onBack={() => setView('dashboard')} />
+      {view === 'AddLog' && (
+        <AddLog onBack={() => setView('Dashboard')} />
       )}
-      {view === 'mealList' && (
-        <MealList onBack={() => setView('dashboard')} />
+      {view === 'MealList' && (
+        <MealList onBack={() => setView('Dashboard')} />
       )}
-      {view === 'settings' && (
-        <SettingsPage onBack={() => setView('dashboard')} />
+      {view === 'Settings' && (
+        <Settings onBack={() => setView('Dashboard')} />
       )}
-      <BottomNav current={view} onNavigate={setView} />
+      <Navigation current={view} onNavigate={setView} />
     </div>
   );
 };

@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format, isToday, isYesterday } from 'date-fns';
-import { Plus, Utensils, Clock, TrendingUp } from 'lucide-react';
+import { Plus, Utensils, Clock, TrendingUp, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getEntries, type MealEntry } from '@/lib/storage';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { getLogEntries, clearLogEntries, saveLogEntries, type LogEntry } from '@/lib/log';
+import { getSettings } from '@/lib/settings';
 import { getPendingReminders } from '@/lib/notifications';
-import FollowUpBanner from '@/components/FollowUpBanner';
+import UpdateLog from '@/components/UpdateLog';
 
 function getGlucoseColor(glucose: number): string {
   if (glucose < 70) return 'text-glucose-low';
@@ -21,7 +23,7 @@ function formatEntryDate(timestamp: string): string {
   return format(date, 'MMM d, h:mm a');
 }
 
-const timeOfDayLabels: Record<string, string> = {
+const mealTypeLabels: Record<string, string> = {
   breakfast: '🌅 Breakfast',
   lunch: '☀️ Lunch',
   dinner: '🌙 Dinner',
@@ -33,11 +35,61 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onAddEntry }: DashboardProps) {
-  const [entries] = useState<MealEntry[]>(getEntries);
-  const pendingReminders = getPendingReminders();
-  const pendingEntries = entries.filter(e =>
-    !e.followUpDone && pendingReminders.some(r => r.entryId === e.id)
-  );
+  const [entries, setEntries] = useState<LogEntry[]>([]);
+  const [pendingReminders, setPendingReminders] = useState(getPendingReminders());
+  const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+  const [settings, setSettings] = useState<any>(null);
+
+  const refreshData = async () => {
+    const [logEntries, settingsData] = await Promise.all([
+      getLogEntries(),
+      getSettings()
+    ]);
+    setEntries(logEntries);
+    setSettings(settingsData);
+    // Update pending reminders after entries are loaded
+    setPendingReminders(getPendingReminders());
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPendingReminders(getPendingReminders());
+    }, 1000); // Check for new reminders every second
+
+    return () => clearInterval(interval);
+  }, []); // Remove settings dependency
+
+  const handleEntrySelect = (entryId: string) => {
+    const newSelected = new Set(selectedEntries);
+    if (newSelected.has(entryId)) {
+      newSelected.delete(entryId);
+    } else {
+      newSelected.add(entryId);
+    }
+    setSelectedEntries(newSelected);
+  };
+
+  const handleClearLog = async () => {
+    if (selectedEntries.size > 0) {
+      const remainingEntries = entries.filter(
+        entry => !selectedEntries.has(entry.id));
+      await saveLogEntries(remainingEntries);
+      setSelectedEntries(new Set());
+    } else {
+      await clearLogEntries();
+    }
+    setPendingReminders([]);
+    await refreshData();
+  };
+
+  const pendingEntries = entries.filter(e => {
+    const hasReminder = pendingReminders.some(r => r.entryId === e.id);
+    return !e.followUpDone && hasReminder;
+  });
 
   const todayEntries = entries.filter(e => isToday(new Date(e.timestamp)));
   const avgGlucose = todayEntries.length > 0
@@ -52,14 +104,45 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
           <h1 className="text-2xl font-bold text-foreground">Calcibus</h1>
           <p className="text-sm text-muted-foreground">{format(new Date(), 'EEEE, MMMM d')}</p>
         </div>
-        <Button onClick={onAddEntry} size="lg" className="rounded-full h-12 w-12 p-0">
-          <Plus className="h-6 w-6" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant={selectedEntries.size > 0 ? "destructive" : "outline"} 
+                size="lg" 
+                className={`rounded-full h-12 w-12 p-0 ${selectedEntries.size > 0 ? 'bg-destructive hover:bg-destructive/90' : ''}`}
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {selectedEntries.size > 0 ? 'Delete Selected Entries' : 'Clear All Entries'}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {selectedEntries.size > 0
+                    ? `This will permanently delete ${selectedEntries.size} selected meal entr${selectedEntries.size === 1 ? 'y' : 'ies'} and their follow-up reminders. This action cannot be undone.`
+                    : 'This will permanently delete all meal entries and follow-up reminders. This action cannot be undone.'
+                  }
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearLog} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {selectedEntries.size > 0 ? 'Delete Selected' : 'Clear All'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button onClick={onAddEntry} size="lg" className="rounded-full h-12 w-12 p-0">
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
       </div>
 
-      {/* Follow-up banners */}
       {pendingEntries.map(entry => (
-        <FollowUpBanner key={entry.id} entry={entry} />
+        <UpdateLog key={entry.id} entry={entry} onUpdate={refreshData} />
       ))}
 
       {/* Today's summary */}
@@ -96,12 +179,20 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
       ) : (
         <div className="flex flex-col gap-2">
           {entries.slice(0, 20).map(entry => (
-            <Card key={entry.id} className="p-4">
+            <Card 
+              key={entry.id} 
+              className={`p-4 cursor-pointer transition-colors ${
+                selectedEntries.has(entry.id) 
+                  ? 'border-destructive bg-destructive/5' 
+                  : 'hover:bg-muted/50'
+              }`}
+              onClick={() => handleEntrySelect(entry.id)}
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-semibold">{entry.mealName}</p>
                   <p className="text-sm text-muted-foreground">
-                    {timeOfDayLabels[entry.timeOfDay]} · {formatEntryDate(entry.timestamp)}
+                    {mealTypeLabels[entry.mealType]} · {formatEntryDate(entry.timestamp)}
                   </p>
                 </div>
                 <div className="text-right">

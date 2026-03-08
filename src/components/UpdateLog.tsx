@@ -3,24 +3,27 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { updateEntryFollowUp, type MealEntry } from '@/lib/storage';
+import { updateLogEntry, type LogEntry } from '@/lib/log';
 import { clearReminder } from '@/lib/notifications';
 import { AlertTriangle } from 'lucide-react';
 
-interface FollowUpBannerProps {
-  entry: MealEntry;
+interface UpdateLogProps {
+  entry: LogEntry;
+  onUpdate?: () => void;
 }
 
-export default function FollowUpBanner({ entry }: FollowUpBannerProps) {
+export default function UpdateLog({ entry }: UpdateLogProps) {
   const [glucose, setGlucose] = useState('');
   const [done, setDone] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const value = parseFloat(glucose);
-    if (isNaN(value) || value <= 0) return;
-    updateEntryFollowUp(entry.id, value);
+    if (isNaN(value) || value <= 0)
+      return;
+    await updateLogEntry(entry.id, value);
     clearReminder(entry.id);
     setDone(true);
+    onUpdate?.();
   };
 
   if (done) {

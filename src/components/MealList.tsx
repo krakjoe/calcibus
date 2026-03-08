@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { getMeals, addMeal, removeMeal, type Meal } from '@/lib/storage';
+import { getMeals, addMeal, removeMeal, type Meal } from '@/lib/meals';
 import { toast } from 'sonner';
 
 interface MealListProps {
@@ -11,17 +11,25 @@ interface MealListProps {
 }
 
 export default function MealList({ onBack }: MealListProps) {
-  const [meals, setMeals] = useState<Meal[]>(getMeals);
+  const [meals, setMeals] = useState<Meal[]>([]);
   const [newName, setNewName] = useState('');
   const [newCarbs, setNewCarbs] = useState('');
   const listEndRef = useRef<HTMLDivElement>(null);
 
-  const handleAdd = () => {
+  useEffect(() => {
+    const loadMeals = async () => {
+      const mealsData = await getMeals();
+      setMeals(mealsData);
+    };
+    loadMeals();
+  }, []);
+
+  const handleAdd = async () => {
     if (!newName.trim()) {
       toast.error('Please enter a meal name');
       return;
     }
-    const meal = addMeal(newName.trim(), newCarbs ? parseInt(newCarbs) : undefined);
+    const meal = await addMeal(newName.trim(), newCarbs ? parseInt(newCarbs) : undefined);
     setMeals(prev => [...prev, meal]);
     setNewName('');
     setNewCarbs('');
@@ -29,8 +37,8 @@ export default function MealList({ onBack }: MealListProps) {
     setTimeout(() => listEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
 
-  const handleRemove = (id: string) => {
-    removeMeal(id);
+  const handleRemove = async (id: string) => {
+    await removeMeal(id);
     setMeals(prev => prev.filter(m => m.id !== id));
   };
 
