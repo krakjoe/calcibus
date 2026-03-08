@@ -9,7 +9,7 @@ For pancreatically challenged humans dependent on insulin:
 
 # Use Online
 
-Visit: https://calcibus.lovable.app
+Visit: https://krakjoe.github.io/calcibus
 
 # Device Install
 
