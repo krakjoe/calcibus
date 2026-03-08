@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { addLogEntry } from '@/lib/log';
-import { suggestDose } from '@/lib/storage';
+import { suggest } from '@/lib/dose';
 import { getSettings } from '@/lib/settings';
 import { getMeals } from '@/lib/meals';
 import { scheduleFollowUpReminder } from '@/lib/notifications';
@@ -58,7 +58,7 @@ export default function AddLog({ onBack }: AddLogProps) {
 
   const handleGetSuggestion = async () => {
     if (!selectedMealId || !mealType || !glucoseLevel) return;
-    const result = await suggestDose(selectedMealId, mealType, parseFloat(glucoseLevel));
+    const result = await suggest(selectedMealId, mealType, parseFloat(glucoseLevel));
     setSuggestion(result);
     if (result.suggestedDose !== null) {
       setDose(result.suggestedDose.toString());
@@ -71,7 +71,7 @@ export default function AddLog({ onBack }: AddLogProps) {
       return;
     }
 
-    const entry = addLogEntry({
+    const entry = await addLogEntry({
       mealId: selectedMealId,
       mealName: selectedMeal?.name || '',
       glucoseLevel: parseFloat(glucoseLevel),

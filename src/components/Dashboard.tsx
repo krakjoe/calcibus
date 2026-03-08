@@ -36,19 +36,14 @@ interface DashboardProps {
 
 export default function Dashboard({ onAddEntry }: DashboardProps) {
   const [entries, setEntries] = useState<LogEntry[]>([]);
-  const [pendingReminders, setPendingReminders] = useState(getPendingReminders());
+  const [pendingReminders, setPendingReminders] = useState([]);
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
-  const [settings, setSettings] = useState<any>(null);
 
   const refreshData = async () => {
-    const [logEntries, settingsData] = await Promise.all([
-      getLogEntries(),
-      getSettings()
-    ]);
-    setEntries(logEntries);
-    setSettings(settingsData);
-    // Update pending reminders after entries are loaded
-    setPendingReminders(getPendingReminders());
+    setEntries(
+      await getLogEntries());
+    setPendingReminders(
+      getPendingReminders());
   };
 
   useEffect(() => {
@@ -57,11 +52,12 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPendingReminders(getPendingReminders());
-    }, 1000); // Check for new reminders every second
+      setPendingReminders(
+        getPendingReminders());
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, []); // Remove settings dependency
+  }, []);
 
   const handleEntrySelect = (entryId: string) => {
     const newSelected = new Set(selectedEntries);
@@ -87,10 +83,10 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
   };
 
   const pendingEntries = entries.filter(e => {
-    const hasReminder = pendingReminders.some(r => r.entryId === e.id);
+    const hasReminder = pendingReminders
+      .some(r => r.entryId === e.id);
     return !e.followUpDone && hasReminder;
   });
-
   const todayEntries = entries.filter(e => isToday(new Date(e.timestamp)));
   const avgGlucose = todayEntries.length > 0
     ? Math.round(todayEntries.reduce((s, e) => s + e.glucoseLevel, 0) / todayEntries.length)

@@ -12,7 +12,7 @@ interface UpdateLogProps {
   onUpdate?: () => void;
 }
 
-export default function UpdateLog({ entry }: UpdateLogProps) {
+export default function UpdateLog({ entry, onUpdate }: UpdateLogProps) {
   const [glucose, setGlucose] = useState('');
   const [done, setDone] = useState(false);
 

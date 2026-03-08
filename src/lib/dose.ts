@@ -1,7 +1,7 @@
 import { getSettings } from '@/lib/settings';
 import { getLogEntries } from '@/lib/log';
 
-export async function suggestDose(mealId: string, mealType: string, currentGlucose: number): Promise<{ suggestedDose: number | null; confidence: string; basedOn: number }> {
+export async function suggest(mealId: string, mealType: string, currentGlucose: number): Promise<{ suggestedDose: number | null; confidence: string; basedOn: number }> {
   const [settings, entries] = await Promise.all([
     getSettings(),
     getLogEntries()
