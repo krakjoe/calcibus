@@ -93,7 +93,7 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
     : null;
 
   return (
-    <div className="flex flex-col gap-4 p-4 pb-24 max-w-lg mx-auto">
+    <div className="flex flex-col gap-4 p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

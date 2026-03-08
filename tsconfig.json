@@ -7,9 +7,13 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "dexie": [
+        "./src/types/dexie-shim.d.ts"
       ]
     },
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "strictNullChecks": false
   },
   "files": [],

@@ -9,7 +9,7 @@ const Index = () => {
   const [view, setView] = useState<AppView>('Dashboard');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       {view === 'Dashboard' && (
         <Dashboard key="dashboard" onAddEntry={() => setView('AddLog')} />
       )}

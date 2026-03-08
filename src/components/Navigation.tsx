@@ -1,7 +1,7 @@
 import { Utensils, List, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export type AppView = 'Dashboard' | 'AddEntry' | 'MealList' | 'Settings';
+export type AppView = 'Dashboard' | 'AddLog' | 'MealList' | 'Settings';
 
 interface NavigationProps {
   current: AppView;
@@ -16,7 +16,7 @@ export default function Navigation({ current, onNavigate }: NavigationProps) {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
+    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border pb-[max(env(safe-area-inset-bottom),0px)]">
       <div className="flex justify-around max-w-lg mx-auto">
         {items.map(item => (
           <Button

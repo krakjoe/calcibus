@@ -17,7 +17,7 @@ export interface LogEntry {
   followUpDone:       boolean;
 }
 
-export { LogEntry };
+
 
 export async function getLogEntries(): Promise<LogEntry[]> {
     return await db.logEntries.orderBy('timestamp').reverse().toArray();

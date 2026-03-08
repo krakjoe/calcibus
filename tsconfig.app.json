@@ -19,9 +19,13 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "dexie": [
+        "./src/types/dexie-shim.d.ts"
       ]
     },
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "strict": false,
     "target": "ES2020",
     "types": [
