@@ -9,6 +9,10 @@ import Navigation, { type AppView } from '@/components/Navigation';
 const Index = () => {
   const [view, setView] = useState<AppView>('Dashboard');
 
+  useEffect(() => {
+    initNotificationListeners();
+  }, []);
+
   return (
     <div className="min-h-[100dvh] bg-background">
       {view === 'Dashboard' && (
