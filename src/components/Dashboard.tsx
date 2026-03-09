@@ -52,11 +52,18 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPendingReminders(
-        getPendingReminders());
+      setPendingReminders(getPendingReminders());
     }, 1000);
 
-    return () => clearInterval(interval);
+    const handleStorageChange = () => {
+      setPendingReminders(getPendingReminders());
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleEntrySelect = (entryId: string) => {
