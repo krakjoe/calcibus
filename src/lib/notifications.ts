@@ -67,6 +67,14 @@ export function clearReminder(entryId: string): void {
  * or taps a notification.
  */
 export function initNotificationListeners(): void {
+  const dispatchRefresh = () => window.dispatchEvent(new Event('storage'));
+
+  // Refresh when returning to the app (works on web + native without extra plugins)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') dispatchRefresh();
+  });
+  window.addEventListener('focus', dispatchRefresh);
+
   if (!Capacitor.isNativePlatform()) return;
 
   // When user taps the notification, the app resumes — mark that reminder as immediately due
@@ -81,16 +89,7 @@ export function initNotificationListeners(): void {
         : r
     );
     writePending(updated);
-    // Dispatch a storage event so React state refreshes immediately
-    window.dispatchEvent(new Event('storage'));
-  });
-
-  // Also refresh when app comes back to foreground (covers background wake-up)
-  import('@capacitor/app').then(({ App }) => {
-    App.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) {
-        window.dispatchEvent(new Event('storage'));
-      }
-    });
+    dispatchRefresh();
   });
 }
+
