@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Dashboard from '@/components/Dashboard';
+import { initNotificationListeners } from '@/lib/notifications';
 import AddLog from '@/components/AddLog';
 import MealList from '@/components/MealList';
 import Settings from '@/components/Settings';
