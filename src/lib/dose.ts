@@ -81,7 +81,7 @@ export async function getSuggestedDose(mealId: string, currentGlucose: number, a
         let previousInsulinSensitivityFactor =
             getInsulinSensitivityFactor(
                 settings,
-                entry.activeModifiers?.[0],
+                entry.activeModifier,
                 entry.timestamp);
         console.log(entry, previousInsulinSensitivityFactor);
         if ((currentInsulinSensitivityFactor.type == previousInsulinSensitivityFactor.type) &&
