@@ -88,7 +88,7 @@ export async function getSuggestedDose(mealId: string, currentGlucose: number, a
             (currentInsulinSensitivityFactor.label == previousInsulinSensitivityFactor.label)) {
             return entry.followUpDone &&
                     entry.followUpGlucose >= settings.targetRangeMin &&
-                    entry.followUpGlucode <= settings.targetRangeMax;
+                    entry.followUpGlucose <= settings.targetRangeMax;
         }
         return false;
     });
