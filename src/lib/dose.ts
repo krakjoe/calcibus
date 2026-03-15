@@ -48,6 +48,7 @@ export function getInsulinSensitivityFactor(settings: Settings, activeModifier?:
 
     return { 
         type: 'baseline',
+        label: 'Baseline',
         isf: settings.insulinSensitivityFactor 
     };
 }
