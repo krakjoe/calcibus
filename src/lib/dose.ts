@@ -1,4 +1,4 @@
-import { getSettings } from '@/lib/settings';
+import { getSettings, Settings } from '@/lib/settings';
 import { getLogEntries } from '@/lib/log';
 
 export interface InsulinSensitivityFactor {
