@@ -213,7 +213,7 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
                 <div>
                   <p className="font-semibold">{entry.mealName}</p>
                   <p className="text-sm text-muted-foreground">
-                    {entry.mealType ? `${mealTypeLabels[entry.mealType]} · ` : ''}{formatEntryDate(entry.timestamp)}
+                    {formatEntryDate(entry.timestamp)}
                   </p>
                 </div>
                 <div className="text-right">

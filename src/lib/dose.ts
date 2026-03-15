@@ -1,4 +1,4 @@
-import { getSettings } from '@/lib/settings';
+import { getSettings, Settings } from '@/lib/settings';
 import { getLogEntries } from '@/lib/log';
 
 export interface InsulinSensitivityFactor {
@@ -22,6 +22,7 @@ export function getInsulinSensitivityFactor(settings: Settings, activeModifier?:
     if (!settings.insulinSensitivitySchedule) {
         return {
             type: 'baseline',
+            label: 'Baseline',
             isf: settings.insulinSensitivityFactor 
         };
     }
@@ -47,6 +48,7 @@ export function getInsulinSensitivityFactor(settings: Settings, activeModifier?:
 
     return { 
         type: 'baseline',
+        label: 'Baseline',
         isf: settings.insulinSensitivityFactor 
     };
 }
@@ -79,14 +81,14 @@ export async function getSuggestedDose(mealId: string, currentGlucose: number, a
         let previousInsulinSensitivityFactor =
             getInsulinSensitivityFactor(
                 settings,
-                entry.activeModifiers?.[0],
+                entry.activeModifier,
                 entry.timestamp);
         console.log(entry, previousInsulinSensitivityFactor);
         if ((currentInsulinSensitivityFactor.type == previousInsulinSensitivityFactor.type) &&
             (currentInsulinSensitivityFactor.label == previousInsulinSensitivityFactor.label)) {
             return entry.followUpDone &&
                     entry.followUpGlucose >= settings.targetRangeMin &&
-                    entry.followUpGlucode <= settings.targetRangeMax;
+                    entry.followUpGlucose <= settings.targetRangeMax;
         }
         return false;
     });
