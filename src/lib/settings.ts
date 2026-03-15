@@ -4,7 +4,8 @@ export interface Settings {
   reminderDelayMinutes: number;
   pollingIntervalMs: number;
   insulinSensitivityFactor: number;
-  insulinSensitivitySchedule?: Partial<Record<'breakfast' | 'brunch' | 'lunch' | 'dinner' | 'snack', number>>;
+  insulinSensitivitySchedule?: Record<string, { startTime: string; endTime: string; isf: number; label: string }>;
+  insulinSensitivityModifiers?: Record<string, { label: string; isf: number }>;
   targetRangeMin: number;
   targetRangeMax: number;
 }
@@ -15,8 +16,8 @@ const __SETTINGS_DEFAULT__: Settings = {
   reminderDelayMinutes:          120,
   pollingIntervalMs:             10000,
   insulinSensitivityFactor:      50,
-  targetRangeMin:                100,
-  targetRangeMax:                180,
+  targetRangeMin:                130,
+  targetRangeMax:                160,
 };
 
 export async function getSettings(): Promise<Settings> {

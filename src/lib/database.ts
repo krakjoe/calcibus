@@ -15,7 +15,7 @@ export class CalcibusDB extends Dexie {
   constructor() {
     super('CalcibusDB');
     this.version(1).stores({
-      logEntries: 'id, mealType, timestamp, followUpDone',
+      logEntries: 'id, timestamp, followUpDone',
       meals: 'id, name',
       settings: '++id' // auto-incrementing id, but we'll only have one record
     });

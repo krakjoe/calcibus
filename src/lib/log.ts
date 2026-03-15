@@ -6,18 +6,12 @@ export interface LogEntry {
   mealName:           string;
   glucoseLevel:       number;
   dose:               number;
-  mealType:           'breakfast' |
-                      'brunch' |
-                      'lunch' |
-                      'dinner' |
-                      'snack';
   timestamp:          string;
   followUpGlucose?:   number;
   followUpTimestamp?: string;
   followUpDone:       boolean;
+  activeModifier?:    string;
 }
-
-
 
 export async function getLogEntries(): Promise<LogEntry[]> {
     return await db.logEntries.orderBy('timestamp').reverse().toArray();

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { addLogEntry } from '@/lib/log';
-import { suggest } from '@/lib/dose';
+import { getSuggestedDose } from '@/lib/dose';
 import { getSettings } from '@/lib/settings';
 import { getMeals } from '@/lib/meals';
 import { scheduleFollowUpReminder } from '@/lib/notifications';
@@ -28,10 +28,10 @@ export default function AddLog({ onBack }: AddLogProps) {
   const [meals, setMeals] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [selectedMealId, setSelectedMealId] = useState('');
-  const [mealType, setMealType] = useState<string>('');
   const [glucoseLevel, setGlucoseLevel] = useState('');
   const [dose, setDose] = useState('');
   const [reminderMinutes, setReminderMinutes] = useState('');
+  const [selectedModifier, setSelectedModifier] = useState<string>('');
   const [suggestion, setSuggestion] = useState<{ suggestedDose: number | null; confidence: string; basedOn: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,16 +57,15 @@ export default function AddLog({ onBack }: AddLogProps) {
   const selectedMeal = meals.find(m => m.id === selectedMealId);
 
   const handleGetSuggestion = async () => {
-    if (!selectedMealId || !mealType || !glucoseLevel) return;
-    const result = await suggest(selectedMealId, mealType, parseFloat(glucoseLevel));
+    if (!selectedMealId || !glucoseLevel) return;
+    const modifier = selectedModifier === 'none' ? undefined : selectedModifier;
+    const result = await getSuggestedDose(
+      selectedMealId, parseFloat(glucoseLevel), modifier);
     setSuggestion(result);
-    if (result.suggestedDose !== null) {
-      setDose(result.suggestedDose.toString());
-    }
   };
 
   const handleSubmit = async () => {
-    if (!selectedMealId || !mealType || !glucoseLevel || !dose) {
+    if (!selectedMealId || !glucoseLevel || !dose) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -76,8 +75,8 @@ export default function AddLog({ onBack }: AddLogProps) {
       mealName: selectedMeal?.name || '',
       glucoseLevel: parseFloat(glucoseLevel),
       dose: parseFloat(dose),
-      mealType: mealType as 'breakfast' | 'brunch' | 'lunch' | 'dinner' | 'snack',
       timestamp: new Date().toISOString(),
+      activeModifier: selectedModifier === 'none' ? undefined : selectedModifier,
     });
 
     const delay = parseInt(reminderMinutes) || settings.reminderDelayMinutes;
@@ -88,7 +87,7 @@ export default function AddLog({ onBack }: AddLogProps) {
   };
 
   // Auto-suggest when all fields are filled
-  const canSuggest = selectedMealId && mealType && glucoseLevel;
+  const canSuggest = selectedMealId && glucoseLevel;
 
   if (loading) {
     return (
@@ -113,21 +112,6 @@ export default function AddLog({ onBack }: AddLogProps) {
       </div>
 
       <Card className="p-5 flex flex-col gap-5">
-        {/* Time of Day */}
-        <div>
-          <Label>Time of Day</Label>
-          <Select value={mealType} onValueChange={setMealType}>
-            <SelectTrigger className="mt-1.5">
-              <SelectValue placeholder="Select meal time" />
-            </SelectTrigger>
-            <SelectContent>
-              {timeSlots.map(slot => (
-                <SelectItem key={slot.value} value={slot.value}>{slot.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Meal Selection */}
         <div>
           <Label>Meal</Label>
@@ -157,6 +141,29 @@ export default function AddLog({ onBack }: AddLogProps) {
             className="mt-1.5"
           />
         </div>
+
+        {/* Modifiers */}
+        {settings?.insulinSensitivityModifiers && Object.keys(settings.insulinSensitivityModifiers).length > 0 && (
+          <div>
+            <Label>Active Modifier (optional)</Label>
+            <p className="text-xs text-muted-foreground mt-1 mb-2">
+              Select a condition that may affect your insulin sensitivity
+            </p>
+            <Select value={selectedModifier || 'none'} onValueChange={(value) => setSelectedModifier(value === 'none' ? '' : value)}>
+              <SelectTrigger className="mt-1.5">
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {Object.entries(settings.insulinSensitivityModifiers).map(([key, modifier]: [string, any]) => (
+                  <SelectItem key={key} value={key}>
+                    {modifier.label} (ISF: {modifier.isf})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Dose Suggestion */}
         {canSuggest && (

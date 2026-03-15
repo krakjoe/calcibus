@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { getLogEntries, clearLogEntries, saveLogEntries, type LogEntry } from '@/lib/log';
 import { getSettings } from '@/lib/settings';
 import { getPendingReminders } from '@/lib/notifications';
+import { getInsulinSensitivityFactor } from '@/lib/dose';
 import UpdateLog from '@/components/UpdateLog';
 
 function getGlucoseColor(glucose: number): string {
@@ -38,12 +39,21 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [pendingReminders, setPendingReminders] = useState([]);
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+  const [currentInsulinSensitivityFactor, setCurrentInsulinSensitivityFactor] = useState<{ isf: number; label?: string }>({ isf: 50 });
+  const [settings, setSettings] = useState<any>(null);
 
   const refreshData = async () => {
     setEntries(
       await getLogEntries());
     setPendingReminders(
       getPendingReminders());
+    
+    // Load current ISF info
+    const settingsData = await getSettings();
+    console.log(settingsData);
+    setSettings(settingsData);
+    setCurrentInsulinSensitivityFactor(
+      getInsulinSensitivityFactor(settingsData));
   };
 
   useEffect(() => {
@@ -51,8 +61,14 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       setPendingReminders(getPendingReminders());
+      
+      // Also refresh ISF info in case time range changed
+      const settingsData = await getSettings();
+      setSettings(settingsData);
+      setCurrentInsulinSensitivityFactor(
+        getInsulinSensitivityFactor(settingsData));
     }, 1000);
 
     const handleStorageChange = () => {
@@ -157,10 +173,12 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
         </Card>
         <Card className="p-3 text-center">
           <TrendingUp className="h-5 w-5 mx-auto mb-1 text-primary" />
-          <p className={`text-2xl font-bold ${avgGlucose ? getGlucoseColor(avgGlucose) : ''}`}>
-            {avgGlucose ?? '—'}
+          <p className="text-2xl font-bold">
+            {currentInsulinSensitivityFactor.isf}
           </p>
-          <p className="text-xs text-muted-foreground">Avg BG</p>
+          <p className="text-xs text-muted-foreground">
+            ISF{currentInsulinSensitivityFactor.label ? `: ${currentInsulinSensitivityFactor.label}` : ''}
+          </p>
         </Card>
         <Card className="p-3 text-center">
           <Clock className="h-5 w-5 mx-auto mb-1 text-primary" />
@@ -195,7 +213,7 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
                 <div>
                   <p className="font-semibold">{entry.mealName}</p>
                   <p className="text-sm text-muted-foreground">
-                    {mealTypeLabels[entry.mealType]} · {formatEntryDate(entry.timestamp)}
+                    {entry.mealType ? `${mealTypeLabels[entry.mealType]} · ` : ''}{formatEntryDate(entry.timestamp)}
                   </p>
                 </div>
                 <div className="text-right">
@@ -209,6 +227,14 @@ export default function Dashboard({ onAddEntry }: DashboardProps) {
                 <span className="bg-secondary px-2 py-0.5 rounded-md">
                   Dose: {entry.dose}u
                 </span>
+                {settings && (
+                  <span className="bg-blue-50 dark:bg-blue-950/20 px-2 py-0.5 rounded-md text-blue-700 dark:text-blue-300">
+                    ISF: {getInsulinSensitivityFactor(settings, entry.activeModifier, entry.timestamp).isf}
+                    {getInsulinSensitivityFactor(settings, entry.activeModifier, entry.timestamp).label && 
+                      ` (${getInsulinSensitivityFactor(settings, entry.activeModifier, entry.timestamp).label})`
+                    }
+                  </span>
+                )}
                 {entry.followUpDone && entry.followUpGlucose !== undefined && (
                   <span className={`px-2 py-0.5 rounded-md ${
                     entry.followUpGlucose >= 70 && entry.followUpGlucose <= 180

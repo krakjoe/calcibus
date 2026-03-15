@@ -6,8 +6,6 @@ export interface Meal {
     defaultCarbs?: number;
 }
 
-
-
 const __MEALS_DEFAULT__: Meal[] = [
     { id: '1', name: 'Oatmeal',            defaultCarbs: 30 },
     { id: '2', name: 'Eggs & Toast',       defaultCarbs: 25 },
@@ -24,15 +22,11 @@ const __MEALS_DEFAULT__: Meal[] = [
 export async function getMeals(): Promise<Meal[]> {
     const meals = await db.meals.toArray();
     if (meals.length === 0) {
-        await db.meals.bulkAdd(__MEALS_DEFAULT__);
+        await db.meals.bulkAdd(
+            __MEALS_DEFAULT__);
         return __MEALS_DEFAULT__;
     }
     return meals;
-}
-
-export async function saveMeals(meals: Meal[]): Promise<void> {
-    await db.meals.clear();
-    await db.meals.bulkAdd(meals);
 }
 
 export async function addMeal(name: string, defaultCarbs?: number): Promise<Meal> {

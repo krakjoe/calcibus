@@ -1,58 +1,123 @@
 import { getSettings } from '@/lib/settings';
 import { getLogEntries } from '@/lib/log';
 
-export async function suggest(mealId: string, mealType: string, currentGlucose: number): Promise<{ suggestedDose: number | null; confidence: string; basedOn: number }> {
-  const [settings, entries] = await Promise.all([
-    getSettings(),
-    getLogEntries()
-  ]);
+export interface InsulinSensitivityFactor {
+    type:      'baseline' | 'modifier' | 'schedule',
+    label:      string,
+    isf:        number
+};
 
-  const filteredEntries = entries.filter(e =>
-    e.mealId === mealId &&
-    e.mealType === mealType &&
-    e.followUpDone &&
-    e.followUpGlucose !== undefined
-  );
+export function getInsulinSensitivityFactor(settings: Settings, activeModifier?: string, timestamp?: string): InsulinSensitivityFactor {
+    if (activeModifier && settings.insulinSensitivityModifiers) {
+        const modifier = settings.insulinSensitivityModifiers[activeModifier];
+        if (modifier) {
+            return {
+                type:   'modifier',
+                label:  modifier.label,
+                isf:    modifier.isf
+            };
+        }
+    }
 
-  if (filteredEntries.length === 0) {
-    return { suggestedDose: null, confidence: 'none', basedOn: 0 };
-  }
+    if (!settings.insulinSensitivitySchedule) {
+        return {
+            type: 'baseline',
+            isf: settings.insulinSensitivityFactor 
+        };
+    }
 
-  // Find entries where the follow-up glucose was in range
-  const successfulEntries = filteredEntries.filter(e =>
-    e.followUpGlucose! >= settings.targetRangeMin && e.followUpGlucose! <= settings.targetRangeMax
-  );
+    const now = new Date(timestamp);
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight
 
-  if (successfulEntries.length > 0) {
-    // Weight more recent entries higher
-    const sorted = successfulEntries.sort((a, b) =>
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    for (const [key, schedule] of Object.entries(settings.insulinSensitivitySchedule) as [string, any][]) {
+        const [startHour, startMin] = schedule.startTime.split(':').map(Number);
+        const [endHour, endMin] = schedule.endTime.split(':').map(Number);
+
+        const startMinutes = startHour * 60 + startMin;
+        const endMinutes = endHour * 60 + endMin;
+
+        if (currentTime >= startMinutes && currentTime < endMinutes) {
+            return { 
+                type: 'schedule',
+                isf: schedule.isf,
+                label: schedule.label 
+            };
+        }
+    }
+
+    return { 
+        type: 'baseline',
+        isf: settings.insulinSensitivityFactor 
+    };
+}
+
+export interface SuggestedDose {
+    suggestedDose:  number | null;
+    confidence:     'none' | 'high' | 'low';
+    basedOn:        number 
+};
+
+const noSuggestedDose : SuggestedDose = {
+    suggestedDose: null,
+    confidence: 'none',
+    basedOn: 0
+};
+
+export async function getSuggestedDose(mealId: string, currentGlucose: number, activeModifier?: string): Promise<SuggestedDose> {
+    const [settings, entries] = await Promise.all([
+        getSettings(),
+        getLogEntries()
+    ]);
+
+    const currentInsulinSensitivityFactor =
+        getInsulinSensitivityFactor(
+            settings,
+            activeModifier);
+    console.log(currentInsulinSensitivityFactor);
+    const filteredEntries = entries.filter(entry => 
+    {
+        let previousInsulinSensitivityFactor =
+            getInsulinSensitivityFactor(
+                settings,
+                entry.activeModifiers?.[0],
+                entry.timestamp);
+        console.log(entry, previousInsulinSensitivityFactor);
+        if ((currentInsulinSensitivityFactor.type == previousInsulinSensitivityFactor.type) &&
+            (currentInsulinSensitivityFactor.label == previousInsulinSensitivityFactor.label)) {
+            return entry.followUpDone &&
+                    entry.followUpGlucose >= settings.targetRangeMin &&
+                    entry.followUpGlucode <= settings.targetRangeMax;
+        }
+        return false;
+    });
+
+    if (filteredEntries.length === 0) {
+        return noSuggestedDose;
+    }
+
+    const sorted = filteredEntries.sort((a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     const recent = sorted.slice(0, 5);
 
-    // Adjust dose based on glucose difference from past entries
     const avgDose = recent.reduce((sum, e) => sum + e.dose, 0) / recent.length;
     const avgGlucose = recent.reduce((sum, e) => sum + e.glucoseLevel, 0) / recent.length;
 
-    // Use Insulin Sensitivity Factor for adjustment (schedule-aware)
-    const isf = settings.insulinSensitivitySchedule?.[mealType] ?? settings.insulinSensitivityFactor;
     const glucoseDiff = currentGlucose - avgGlucose;
-    const adjustment = glucoseDiff / isf;
+    const adjustment = glucoseDiff / currentInsulinSensitivityFactor.isf;
 
-    const suggested = Math.max(0, Math.round((avgDose + adjustment) * 2) / 2);
+    const targetGlucose =
+        (settings.targetRangeMin + settings.targetRangeMax) / 2;
+    const baseAdjustment =
+        (currentGlucose - targetGlucose) /
+            currentInsulinSensitivityFactor.isf;
+
+    const suggested = Math.max(0,
+        Math.round((avgDose + adjustment + baseAdjustment) * 2) / 2);
 
     return {
-      suggestedDose: suggested,
-      confidence: recent.length >= 3 ? 'high' : 'low',
-      basedOn: recent.length,
+        suggestedDose:  suggested,
+        confidence:     recent.length >= 3 ? 'high' : 'low',
+        basedOn:        recent.length,
     };
-  }
-
-  // Fall back to average of all entries for this meal/time
-  const avgDose = filteredEntries.reduce((sum, e) => sum + e.dose, 0) / filteredEntries.length;
-  return {
-    suggestedDose: Math.round(avgDose * 2) / 2,
-    confidence: 'low',
-    basedOn: filteredEntries.length,
-  };
 }
